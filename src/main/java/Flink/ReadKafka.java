@@ -16,31 +16,29 @@ import java.util.concurrent.ExecutionException;
 
 public class ReadKafka {
     public static void main(String[] args) throws Exception {
-//
-//        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-//        Properties properties = new Properties();
-//        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,AdminUtil.BOOTSTRAP_SERVER);
-//        String inputTopic = "test";
-//        FlinkKafkaConsumer<String> stringFlinkConsumer = new FlinkKafkaConsumer<>(inputTopic, new SimpleStringSchema(), properties);
-//        DataStream<String> stream = env.addSource(stringFlinkConsumer);
-//
-//
-//
-//        // Sink
-//        stream.print();
-//        // execute
-//        env.execute("kafka streaming word count");
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-
         Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers", "10.176.24.58:9092");
+        properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,AdminUtil.BOOTSTRAP_SERVER);
+        String inputTopic = "zxp";
+        FlinkKafkaConsumer<String> stringFlinkConsumer = new FlinkKafkaConsumer<>(inputTopic, new SimpleStringSchema(), properties);
+        DataStream<String> stream = env.addSource(stringFlinkConsumer);
 
-        DataStream<String> dataStream = env.addSource(new FlinkKafkaConsumer<String>("test", new SimpleStringSchema(), properties));
-
-        dataStream.print();
-
-        env.execute();
+        // Sink
+        stream.print();
+        // execute
+        env.execute("kafka streaming word count");
+//
+//        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+//
+//        Properties properties = new Properties();
+//        properties.setProperty("bootstrap.servers", "10.176.24.58:9092");
+//
+//        DataStream<String> dataStream = env.addSource(new FlinkKafkaConsumer<String>("test", new SimpleStringSchema(), properties));
+//
+//        dataStream.print();
+//
+//        env.execute();
 
 
 
