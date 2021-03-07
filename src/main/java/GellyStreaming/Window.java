@@ -106,7 +106,7 @@ public class Window implements ProgramDescription {
     }
 
     @SuppressWarnings("serial")
-    public static final class Count implements
+    public static final class Count() {
         //
     }
 
