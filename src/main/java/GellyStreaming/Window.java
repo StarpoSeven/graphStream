@@ -40,9 +40,7 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.NullValue;
 import org.apache.flink.util.Collector;
 
-/**
- * Counts exact number of triangles in a graph slice.
- */
+
 public class Window implements ProgramDescription {
 
     public static void main(String[] args) throws Exception {
