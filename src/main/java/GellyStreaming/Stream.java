@@ -57,7 +57,7 @@ public class Stream {
             result.print();
         }
 
-        env.execute("No window Count");
+        env.execute("Exact Triangle Count");
     }
 
     public static final class IntersectNeighborhoods implements

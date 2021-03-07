@@ -40,7 +40,6 @@ import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.types.NullValue;
 import org.apache.flink.util.Collector;
 
-
 public class Window implements ProgramDescription {
 
     public static void main(String[] args) throws Exception {
