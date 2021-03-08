@@ -39,20 +39,20 @@ public class WindowStream  {
 
         SimpleEdgeStream<Long, NullValue> edges = getGraphStream(env);
 
-        DataStream<Tuple2<Integer, Long>> triangleCount =
+        DataStream<Tuple2<Integer, Long>> CountCount =
                 edges.slice(windowTime, EdgeDirection.ALL)
-                        .applyOnNeighbors(new org.apache.flink.graph.streaming.example.WindowTriangles.GenerateCandidateEdges())
+                        .applyOnNeighbors(new org.apache.flink.graph.streaming.example.WindowCounts.GenerateCandidateEdges())
                         .keyBy(0, 1).timeWindow(windowTime)
-                        .apply(new org.apache.flink.graph.streaming.example.WindowTriangles.CountTriangles())
+                        .apply(new org.apache.flink.graph.streaming.example.WindowCounts.CountCounts())
                         .timeWindowAll(windowTime).sum(0);
 
         if (fileOutput) {
-            triangleCount.writeAsText(outputPath);
+            CountCount.writeAsText(outputPath);
         }
         else {
-            triangleCount.print();
+            CountCount.print();
         }
-        env.execute("Naive window triangle count");
+        env.execute("Naive window Count count");
     }
 
     @SuppressWarnings("serial")
@@ -92,7 +92,7 @@ public class WindowStream  {
     }
 
     @SuppressWarnings("serial")
-    public static final class CountTriangles implements
+    public static final class CountCounts implements
             WindowFunction<Tuple3<Long, Long, Boolean>, Tuple2<Integer, Long>, Tuple, TimeWindow>{
 
         @Override
@@ -155,7 +155,7 @@ public class WindowStream  {
                             long timestamp = Long.parseLong(fields[2]);
                             return new Edge<>(src, trg, timestamp);
                         }
-                    }), new org.apache.flink.graph.streaming.example.WindowTriangles.EdgeValueTimestampExtractor(), env).mapEdges(new org.apache.flink.graph.streaming.example.WindowTriangles.RemoveEdgeValue());
+                    }), new org.apache.flink.graph.streaming.example.WindowCounts.EdgeValueTimestampExtractor(), env).mapEdges(new org.apache.flink.graph.streaming.example.WindowCounts.RemoveEdgeValue());
         }
 
         return new SimpleEdgeStream<>(env.generateSequence(1, 10).flatMap(
@@ -167,7 +167,7 @@ public class WindowStream  {
                             out.collect(new Edge<>(key, target, key*100 + (i-1)*50));
                         }
                     }
-                }), new org.apache.flink.graph.streaming.example.WindowTriangles.EdgeValueTimestampExtractor(), env).mapEdges(new org.apache.flink.graph.streaming.example.WindowTriangles.RemoveEdgeValue());
+                }), new org.apache.flink.graph.streaming.example.WindowCounts.EdgeValueTimestampExtractor(), env).mapEdges(new org.apache.flink.graph.streaming.example.WindowCounts.RemoveEdgeValue());
     }
 
 

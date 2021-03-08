@@ -28,9 +28,9 @@ public class Stream {
 
         DataStream<Tuple2<Integer, Integer>> result =
                 edges.buildNeighborhood(false)
-                        .map(new org.apache.flink.graph.streaming.example.ExactTriangleCount.ProjectCanonicalEdges())
-                        .keyBy(0, 1).flatMap(new org.apache.flink.graph.streaming.example.ExactTriangleCount.IntersectNeighborhoods())
-                        .keyBy(0).flatMap(new org.apache.flink.graph.streaming.example.ExactTriangleCount.SumAndEmitCounters());
+                        .map(new org.apache.flink.graph.streaming.example.ExactCount.ProjectCanonicalEdges())
+                        .keyBy(0, 1).flatMap(new org.apache.flink.graph.streaming.example.ExactCount.IntersectNeighborhoods())
+                        .keyBy(0).flatMap(new org.apache.flink.graph.streaming.example.ExactCount.SumAndEmitCounters());
 
         if (resultPath != null) {
             result.writeAsText(resultPath);
