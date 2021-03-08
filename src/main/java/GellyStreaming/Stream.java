@@ -1,22 +1,4 @@
-package GellyStreaming;/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-
+package GellyStreaming;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;
@@ -46,9 +28,9 @@ public class Stream {
 
         DataStream<Tuple2<Integer, Integer>> result =
                 edges.buildNeighborhood(false)
-                        .map(new ProjectCanonicalEdges())
-                        .keyBy(0, 1).flatMap(new IntersectNeighborhoods())
-                        .keyBy(0).flatMap(new SumAndEmitCounters());
+                        .map(new org.apache.flink.graph.streaming.example.ExactTriangleCount.ProjectCanonicalEdges())
+                        .keyBy(0, 1).flatMap(new org.apache.flink.graph.streaming.example.ExactTriangleCount.IntersectNeighborhoods())
+                        .keyBy(0).flatMap(new org.apache.flink.graph.streaming.example.ExactTriangleCount.SumAndEmitCounters());
 
         if (resultPath != null) {
             result.writeAsText(resultPath);
@@ -57,8 +39,9 @@ public class Stream {
             result.print();
         }
 
-        env.execute("Exact Triangle Count");
+        env.execute();
     }
+
 
     public static final class IntersectNeighborhoods implements
             FlatMapFunction<Tuple3<Integer, Integer, TreeSet<Integer>>, Tuple2<Integer, Integer>> {
@@ -66,12 +49,15 @@ public class Stream {
         Map<Tuple2<Integer, Integer>, TreeSet<Integer>> neighborhoods = new HashMap<>();
 
         public void flatMap(Tuple3<Integer, Integer, TreeSet<Integer>> t, Collector<Tuple2<Integer, Integer>> out) {
+            //intersect neighborhoods and emit local and global counters
             Tuple2<Integer, Integer> key = new Tuple2<>(t.f0, t.f1);
             if (neighborhoods.containsKey(key)) {
+                // this is the 2nd neighborhood => intersect
                 TreeSet<Integer> t1 = neighborhoods.remove(key);
                 TreeSet<Integer> t2 = t.f2;
                 int counter = 0;
                 if (t1.size() < t2.size()) {
+                    // iterate t1 and search t2
                     for (int i : t1) {
                         if (t2.contains(i)) {
                             counter++;
@@ -79,6 +65,7 @@ public class Stream {
                         }
                     }
                 } else {
+                    // iterate t2 and search t1
                     for (int i : t2) {
                         if (t1.contains(i)) {
                             counter++;
@@ -87,19 +74,19 @@ public class Stream {
                     }
                 }
                 if (counter > 0) {
+                    //emit counter for srcID, trgID, and total
                     out.collect(new Tuple2<>(t.f0, counter));
                     out.collect(new Tuple2<>(t.f1, counter));
+                    // -1 signals the total counter
                     out.collect(new Tuple2<>(-1, counter));
                 }
             } else {
+                // first neighborhood for this edge: store and wait for next
                 neighborhoods.put(key, t.f2);
             }
         }
     }
 
-    /**
-     * Sums up and emits local and global counters.
-     */
     public static final class SumAndEmitCounters implements FlatMapFunction<Tuple2<Integer, Integer>, Tuple2<Integer, Integer>> {
         Map<Integer, Integer> counts = new HashMap<>();
 
@@ -135,18 +122,12 @@ public class Stream {
 
         if (args.length > 0) {
             if (args.length != 2) {
-                System.err.println("Usage: ExactTriangleCount <input edges path> <result path>");
                 return false;
             }
 
             fileOutput = true;
             edgeInputPath = args[0];
             resultPath = args[1];
-        } else {
-            System.out.println("Executing ExactTriangleCount example with default parameters and built-in default data.");
-            System.out.println("  Provide parameters to read input data from files.");
-            System.out.println("  See the documentation for the correct format of input files.");
-            System.out.println("  Usage: ExactTriangleCount <input edges path> <result path>");
         }
         return true;
     }
